@@ -1,36 +1,93 @@
-# Capistrano::DeployIntoDocker
+# capistrano-deploy\_into\_docker
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/capistrano/deploy_into_docker`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Mini support task file for deploy into docker.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Add in your Gemfile
 
 ```ruby
 gem 'capistrano-deploy_into_docker'
 ```
 
-And then execute:
+## HowTo: deploy your rails appinto docker
 
-    $ bundle
+### add sshkit supports docker backend
 
-Or install it yourself as:
+Currently docker backend is not merged yet into upsatrem.
+You need to fetch gem from my github repository.
 
-    $ gem install capistrano-deploy_into_docker
+Add this line to Gemfile:
 
-## Usage
+```ruby
+gem 'sshkit', github: 'sugi/sshkit', branch: 'docker-backend', group: :development
+```
 
-TODO: Write usage instructions here
+When upstream merges docker backend, you do NOT need this.
 
-## Development
+### require task on Capfile
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+Add following like to your Capfile;
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```ruby
+require 'capistrano/deploy_into_docker'
+```
 
-## Contributing
+This just add deploy_into_docker:commit task.
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/capistrano-deploy_into_docker.
+### deploy setting
 
+Here is an example for config/deploy/docker.rb;
+
+```ruby
+set :branch, 'production'
+set :deploy_to, '/var/local/app'
+set :git_shallow_clone, 1
+fetch(:default_env).merge!(rails_env: :production, SECRET_KEY_BASE: 'dummy', DEVISE_SECRET_KEY: 'dummy')
+
+fetch(:linked_dirs, []).clear
+fetch(:linked_files, []).clear
+
+server docker: {
+    image: 'sugi/rails-base',
+    commit: 'myapp-web',
+  }, user: 'rails:rails', roles: %w{web app}
+```
+
+## Server definition as Docker host
+
+You need to set docker environment as host infomation hash.
+The hash requires **:image** (or :container) key to run.
+
+```ruby
+server docker: {image: 'sugi/rails-base:latest'}
+```
+
+If you set **:commit** key, run "docker commit" after deploy automatically.
+
+```ruby
+server docker: {
+    image: 'sugi/rails-base:latest',
+    commit: 'new-image-name:tag',
+  }, user: 'nobody:nogroup', roles: %w{web app}
+```
+
+In addtion, you can add any options for "docker run". for example;
+
+```ruby
+server docker: {
+    image: 'sugi/rails-base:latest',
+    commit: 'new-image-name:tag',
+    volume: ['/storage/tmp:/tmp', '/storage/home:/home'],
+    network: 'my-net',
+    dns: '8.8.8.8',
+    dns_search: 'example.com',
+    cap_add: ['SYS_NICE', 'SYS_RESOURCE'],
+  }, user: 'nobody:nogroup', roles: %w{web app}
+```
+
+## License
+
+Author: Tatsuki Sugiura
+
+Files are distributed under [MIT License](https://opensource.org/licenses/MIT).
