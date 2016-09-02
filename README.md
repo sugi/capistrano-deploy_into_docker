@@ -40,6 +40,7 @@ This just add deploy_into_docker:commit task.
 Here is an example for config/deploy/docker.rb;
 
 ```ruby
+set :stage, :production
 set :branch, 'production'
 set :deploy_to, '/var/local/app'
 set :git_shallow_clone, 1
