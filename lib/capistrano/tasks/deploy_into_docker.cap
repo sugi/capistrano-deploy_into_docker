@@ -1,0 +1,11 @@
+namespace :deploy_into_docker do
+  set :docker_commit_roles, :all
+  set :docker_commit_servers, -> { release_roles(fetch(:docker_commit_roles)) }
+
+  desc 'commmit docker containers'
+  task :commit do
+    on fetch(:docker_commit_servers) do
+      docker_commit
+    end
+  end
+end
