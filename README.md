@@ -1,6 +1,6 @@
 # capistrano-deploy\_into\_docker
 
-Mini support task file for deploy into docker.
+Mini support task file to deploy app into docker.
 
 ## Installation
 
@@ -10,7 +10,7 @@ Add in your Gemfile
 gem 'capistrano-deploy_into_docker'
 ```
 
-## HowTo: deploy your rails appinto docker
+## HowTo: deploy your rails application into docker
 
 ### add sshkit supports docker backend
 
