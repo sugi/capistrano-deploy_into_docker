@@ -1,31 +1,20 @@
 # capistrano-deploy\_into\_docker
 
+[![Gem Version](https://badge.fury.io/rb/capistrano-deploy_into_docker.svg)](https://badge.fury.io/rb/capistrano-deploy_into_docker)
+
 Mini support task file to deploy app into docker.
 
 ## Installation
 
-Add in your Gemfile
+Add in your Gemfile;
 
 ```ruby
-gem 'capistrano-deploy_into_docker'
+gem 'capistrano-deploy_into_docker', '>= 0.2.0', group: :development
 ```
 
 ## HowTo: deploy your rails application into docker
 
-### add sshkit supports docker backend
-
-Currently docker backend is not merged yet into upsatrem.
-You need to fetch gem from my github repository.
-
-Add this line to Gemfile:
-
-```ruby
-gem 'sshkit', github: 'sugi/sshkit', branch: 'docker-backend', group: :development
-```
-
-When upstream merges docker backend, you do NOT need this.
-
-### require task on Capfile
+### Require task on Capfile
 
 Add following like to your Capfile;
 
@@ -33,13 +22,16 @@ Add following like to your Capfile;
 require 'capistrano/deploy_into_docker'
 ```
 
-This just add deploy_into_docker:commit task.
+This just add `deploy_into_docker:commit` task.
 
-### deploy setting
+### Deploy setting
+
+You need to set `::sshkit_backend` to `SSHKit::Backend::Docker`.
 
 Here is an example for config/deploy/docker.rb;
 
 ```ruby
+set :sshkit_backend, SSHKit::Backend::Docker
 set :stage, :production
 set :branch, 'production'
 set :deploy_to, '/var/local/app'
@@ -58,13 +50,13 @@ server docker: {
 ## Server definition as Docker host
 
 You need to set docker environment as host infomation hash.
-The hash requires **:image** (or :container) key to run.
+The hash requires `:image` (or :container) key to run.
 
 ```ruby
-server docker: {image: 'sugi/rails-base:latest'}
+server docker: {image: 'ruby:latest'}
 ```
 
-If you set **:commit** key, run "docker commit" after deploy automatically.
+If you set `:commit` key, run "docker commit" after deploy automatically.
 
 ```ruby
 server docker: {
@@ -77,7 +69,7 @@ In addtion, you can add any options for "docker run". for example;
 
 ```ruby
 server docker: {
-    image: 'sugi/rails-base:latest',
+    image: 'ruby:latest',
     commit: 'new-image-name:tag',
     volume: ['/storage/tmp:/tmp', '/storage/home:/home'],
     network: 'my-net',
@@ -87,7 +79,7 @@ server docker: {
   }, user: 'nobody:nogroup', roles: %w{web app}
 ```
 
-## License
+## Copyright
 
 Author: Tatsuki Sugiura
 
