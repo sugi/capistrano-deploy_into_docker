@@ -26,7 +26,7 @@ This just add `deploy_into_docker:commit` task.
 
 ### Deploy setting
 
-You need to set `::sshkit_backend` to `SSHKit::Backend::Docker`.
+You need to set `:sshkit_backend` to `SSHKit::Backend::Docker`.
 
 Here is an example for config/deploy/docker.rb;
 
