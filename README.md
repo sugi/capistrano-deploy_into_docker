@@ -35,7 +35,6 @@ set :sshkit_backend, SSHKit::Backend::Docker
 set :stage, :production
 set :branch, 'production'
 set :deploy_to, '/var/local/app'
-set :git_shallow_clone, 1
 fetch(:default_env).merge!(rails_env: :production, SECRET_KEY_BASE: 'dummy', DEVISE_SECRET_KEY: 'dummy')
 
 fetch(:linked_dirs, []).clear
