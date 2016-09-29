@@ -2,7 +2,7 @@
 
 [![Gem Version](https://badge.fury.io/rb/capistrano-deploy_into_docker.svg)](https://badge.fury.io/rb/capistrano-deploy_into_docker)
 
-Mini support task file to deploy app into docker.
+Mini support task to deploy app into docker.
 
 ## Installation
 
@@ -35,7 +35,8 @@ set :sshkit_backend, SSHKit::Backend::Docker
 set :stage, :production
 set :branch, 'production'
 set :deploy_to, '/app'
-fetch(:default_env).merge!(rails_env: :production, SECRET_KEY_BASE: 'dummy', DEVISE_SECRET_KEY: 'dummy')
+fetch(:default_env).merge!(rails_env: :production, RAILS_SERVE_STATIC_FILES: 1,
+			   SECRET_KEY_BASE: 'dummy', DEVISE_SECRET_KEY: 'dummy')
 
 fetch(:linked_dirs, []).clear
 fetch(:linked_files, []).clear
