@@ -14,7 +14,7 @@ gem 'capistrano-deploy_into_docker', '>= 0.2.0', group: :development
 
 ## HowTo: deploy your rails application into docker
 
-### Require task on Capfile
+### 1) Require task on Capfile
 
 Add following like to your Capfile;
 
@@ -24,7 +24,7 @@ require 'capistrano/deploy_into_docker'
 
 This just add `deploy_into_docker:commit` task.
 
-### Deploy setting
+### 2) Create new deploy setting for docker
 
 You need to set `:sshkit_backend` to `SSHKit::Backend::Docker`.
 
@@ -80,7 +80,17 @@ server docker: {
 
 ## Tips
 
-### Deploy as development test
+### Stop to run some tasks only in docker deploy stage
+
+Use `Rake::Task["target:name"].clear`, for example;
+
+```ruby
+Rake::Task["passenger:restart"].clear
+```
+
+You can stop to run any target by calling clear method in deploy/_stage-name_.rb.
+
+### Deploy as handy development test
 
 If you run docker on localhost, mount current source dir as docker volume to test purpose
 (Note: I do NOT suggest this tric to build production environment).
@@ -104,18 +114,7 @@ server docker: {
   commit: 'nvc-test',
   volume: "#{Dir.pwd}:/src",  # <---------- Mount current source as docker volume.
 }, user: 'rails:rails', roles: %w{web app}
-
 ```
-
-### Stop to run some tasks only in docker deploy stage
-
-Use `Rake::Task["target:name"].clear`, for example;
-
-```ruby
-Rake::Task["passenger:restart"].clear
-```
-
-You can stop to run any target by calling clear method in deploy/_stage-name_.rb.
 
 ## Copyright
 
