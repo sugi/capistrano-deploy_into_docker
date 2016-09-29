@@ -34,7 +34,7 @@ Here is an example for config/deploy/docker.rb;
 set :sshkit_backend, SSHKit::Backend::Docker
 set :stage, :production
 set :branch, 'production'
-set :deploy_to, '/var/local/app'
+set :deploy_to, '/app'
 fetch(:default_env).merge!(rails_env: :production, SECRET_KEY_BASE: 'dummy', DEVISE_SECRET_KEY: 'dummy')
 
 fetch(:linked_dirs, []).clear
@@ -61,7 +61,7 @@ If you set `:commit` key, run "docker commit" after deploy automatically.
 server docker: {
     image: 'sugi/rails-base:latest',
     commit: 'new-image-name:tag',
-  }, user: 'nobody:nogroup', roles: %w{web app}
+  }, user: 'rails:rails', roles: %w{web app}
 ```
 
 In addtion, you can add any options for "docker run". for example;
@@ -77,6 +77,45 @@ server docker: {
     cap_add: ['SYS_NICE', 'SYS_RESOURCE'],
   }, user: 'nobody:nogroup', roles: %w{web app}
 ```
+
+## Tips
+
+### Deploy as development test
+
+If you run docker on localhost, mount current source dir as docker volume to test purpose
+(Note: I do NOT suggest this tric to build production environment).
+
+For example;
+
+```ruby
+set :sshkit_backend, SSHKit::Backend::Docker
+set :stage, :development
+set :branch, 'master'
+set :deploy_to, '/app'
+fetch(:default_env).merge!(rails_env: :development, SECRET_KEY_BASE: 'dummy', DEVISE_SECRET_KEY: 'dummy')
+set :bundle_without, 'test'
+set :repo_url, '/src'        # <--------- Use source from mounted volume.
+
+fetch(:linked_dirs, []).clear
+fetch(:linked_files, []).clear
+
+server docker: {
+  image: 'nvc-base',
+  commit: 'nvc-test',
+  volume: "#{Dir.pwd}:/src",  # <---------- Mount current source as docker volume.
+}, user: 'rails:rails', roles: %w{web app}
+
+```
+
+### Stop to run some tasks only in docker deploy stage
+
+Use `Rake::Task["target:name"].clear`, for example;
+
+```ruby
+Rake::Task["passenger:restart"].clear
+```
+
+You can stop to run any target by calling clear method in deploy/_stage-name_.rb.
 
 ## Copyright
 
