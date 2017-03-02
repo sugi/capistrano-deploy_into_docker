@@ -9,7 +9,7 @@ Mini support task to deploy app into docker.
 Add in your Gemfile;
 
 ```ruby
-gem 'capistrano-deploy_into_docker', '>= 0.2.0', group: :development
+gem 'capistrano-deploy_into_docker', '>= 0.2.1', group: :development
 ```
 
 ## HowTo: deploy your rails application into docker
@@ -36,10 +36,11 @@ set :stage, :production
 set :branch, 'production'
 set :deploy_to, '/app'
 fetch(:default_env).merge!(rails_env: :production, RAILS_SERVE_STATIC_FILES: 1,
-			   SECRET_KEY_BASE: 'dummy', DEVISE_SECRET_KEY: 'dummy')
+			   SECRET_KEY_BASE: 'dummy', DEVISE_SECRET_KEY: 'dummy',
+			   DATABASE_URL: 'mysql2://0/must-be-overrided')
 
-fetch(:linked_dirs, []).clear
-fetch(:linked_files, []).clear
+set :linked_dirs, %w{log tmp/sockets public/system}
+Rake::Task["deploy:set_linked_dirs"].clear # Save assets on each releases dir (not under shared)
 
 server docker: {
     image: 'sugi/rails-base',
@@ -65,7 +66,7 @@ server docker: {
   }, user: 'rails:rails', roles: %w{web app}
 ```
 
-In addtion, you can add any options for "docker run". for example;
+In addtion, you can add any options for "docker run". For example;
 
 ```ruby
 server docker: {
@@ -78,6 +79,27 @@ server docker: {
     cap_add: ['SYS_NICE', 'SYS_RESOURCE'],
   }, user: 'nobody:nogroup', roles: %w{web app}
 ```
+
+If you want to build multiple images, define servers for each role. For example;
+
+```ruby
+server docker: {
+  image: 'sugi/rails-base:2.3',
+  commit: 'myapp-web',
+  env: {
+    APP_SERVER_CMD: "exec bin/rails server puma"
+  }
+}, user: 'rails:rails', roles: :web
+
+server docker: {
+  image: 'sugi/rails-base:2.3',
+  commit: 'myapp-job',
+  env: {
+    APP_SERVER_CMD: "exec bin/delayed_job run"
+  }
+}, user: 'rails:rails', roles: :app
+```
+
 
 ## Tips
 
@@ -103,12 +125,16 @@ set :sshkit_backend, SSHKit::Backend::Docker
 set :stage, :development
 set :branch, 'master'
 set :deploy_to, '/app'
-fetch(:default_env).merge!(rails_env: :development, SECRET_KEY_BASE: 'dummy', DEVISE_SECRET_KEY: 'dummy')
+fetch(:default_env).merge!(rails_env: :development,
+   SECRET_KEY_BASE: 'dummy', DEVISE_SECRET_KEY: 'dummy',
+   DATABASE_URL: 'mysql2://0/must-be-overrided'
+   )
 set :bundle_without, 'test'
 set :repo_url, '/src'        # <--------- Use source from mounted volume.
 
 fetch(:linked_dirs, []).clear
 fetch(:linked_files, []).clear
+Rake::Task["deploy:set_linked_dirs"].clear
 
 server docker: {
   image: 'nvc-base',
